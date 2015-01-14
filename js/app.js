@@ -35,10 +35,10 @@ var UserUrlRoot;
 var EventsUrl;
 var EventsUrlRoot;
 if(runningTheAppInHeroku){
-  UserUrl = "https://ancient-chamber-4889.herokuapp.com/users.json";
-  UserUrlRoot = "https://ancient-chamber-4889.herokuapp.com/users";
-  EventsUrl = "https://ancient-chamber-4889.herokuapp.com/events.json";
-  EventsUrlRoot = "https://ancient-chamber-4889.herokuapp.com/events";
+  UserUrl = "https://frozen-garden-3489.herokuapp.com/users.json";
+  UserUrlRoot = "https://frozen-garden-3489.herokuapp.com/users";
+  EventsUrl = "https://frozen-garden-3489.herokuapp.com/events.json";
+  EventsUrlRoot = "https://frozen-garden-3489.herokuapp.com/events";
 } else {
   UserUrl = "http://localhost:3000/users.json";
   UserUrlRoot = "http://localhost:3000/users";
@@ -52,10 +52,10 @@ if(runningTheAppInHeroku){
   var eventListTemplateSource = $("#event-list-template").html();
   eventListTemplate = Handlebars.compile(eventListTemplateSource);
 
-  var individualEventTemplateSource = $("#individual-event-template").html();
+  var individualEventTemplateSource = $("#public-event-template").html();
   individualEventTemplate = Handlebars.compile(individualEventTemplateSource);
 
-  var pubIndividualEventTemplateSource = $("#pub-view-individual-event-template").html();
+  var pubIndividualEventTemplateSource = $("#private-event-template").html();
   pubIndividualEventTemplate = Handlebars.compile(pubIndividualEventTemplateSource);
 
   var editEventTemplateSource = $("#edit-event-template").html();
@@ -250,6 +250,8 @@ var EventList = Backbone.View.extend({
     }
 });
 
+var attendingEvent;
+
 //Set up show Individual Event View
 var ShowIndividualEvent = Backbone.View.extend({
   el: "#container",
@@ -260,21 +262,62 @@ var ShowIndividualEvent = Backbone.View.extend({
 // grab things from database using backbone (fetch is backbone specific)
     event_info.fetch({
       success: function() {
-        if (event_info.attributes.publico) {
-          var html = pubIndividualEventTemplate({
-            eventInfo: event_info
-          });
 
-          $("#container").html(html);
-          $("#container").trigger("create");
-        } else {
+                      $.ajax({
+                        url: UserUrlRoot + "/attending_event/",
+                        type: "POST",
+                        data: {
+
+                            user_id: sessionStorage.getItem("user_id"),
+                            event_id: id
+
+                        } ,
+                        success: function(data) {
+                          // console.log(data.attending);
+                          attendingEvent = data.attending;
+
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+
+                          alert("Something went wrong looking for attending events");
+                        }
+                      });
+
+        console.log("attendingEvent", attendingEvent);
+
+        if (event_info.attributes.is_public) {
+
           var html = individualEventTemplate({
-            eventInfo: event_info
+            eventInfo: event_info,
+            attendingEvent: attendingEvent
           });
 
           $("#container").html(html);
           $("#container").trigger("create");
+
+        } else {
+          console.log("PRIVATE EVENT");
+          var html = pubIndividualEventTemplate({
+            eventInfo: event_info,
+            attendingEvent: attendingEvent
+          });
+
+          $("#container").html(html);
+          $("#container").trigger("create");
+
         }
+
+
+
+
+
+
+
+
+
+
+
+
       }
     });
   }
@@ -299,15 +342,20 @@ var NewEvent = Backbone.View.extend({
     var new_event = new Event();
 
     var eventInfo = {
-      title: $("#new-title").val(),
-      public_descripton : $("#new-public_description").val(),
-      private_descripton : $("#new-private_description").val(),
-      date : $("#new-date").val(),
-      time : $("#new-time").val(),
-      location : $("#new-location").val(),
-      max_attendances : $("#new-max_attendances").val(),
-      event_picture_url: $("#new-event_picture_url").val(),
-      publico : $(".new-publico").val(),
+      public_title: $("#new-title").val(),
+      private_title: $("#new-title").val(),
+      public_descripton: $("#new-public_description").val(),
+      private_descripton: $("#new-private_description").val(),
+      public_date: $("#new-date").val(),
+      private_date: $("#new-date").val(),
+      public_time: $("#new-time").val(),
+      private_time: $("#new-time").val(),
+      public_location: $("#new-location").val(),
+      private_location: $("#new-location").val(),
+      max_attendances: $("#new-max_attendances").val(),
+      public_picture: $("#new-event_picture_url").val(),
+      private_picture: $("#new-event_picture_url").val(),
+      is_public: $(".new-publico").val(),
     };
 
       new_event.save(eventInfo, {
@@ -427,12 +475,50 @@ var Router = Backbone.Router.extend({
     "editUser/:id":"edit-user",
     "newUser":"new_user",
     // "show_profile/:id":"show_profile"
-    "show-profile":"show_profile"
+    "show-profile":"show_profile",
+
+    "rsvp/:id":"rsvp"
+
+  },
+
+  rsvp: function(id){
+
+    console.log("event_id", id);
+    $.ajax({
+      url: UserUrlRoot + "/rsvp/",
+      type: "POST",
+      data: {
+
+          user_id: sessionStorage.getItem("user_id"),
+          event_id: id
+
+      } ,
+      success: function(data) {
+
+        attendingEvent = !attendingEvent;
+        console.log("attendingEvent", attendingEvent)
+
+        router.navigate('show_event/' + id, {trigger: true});
+
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        alert("something went wrong with the rsvp");
+        // console.log(errorThrown);
+
+        // THE USERNAME AND PASSWORD DONT MATCH
+      }
+    });
+
+
 
   },
 
 //Defining index route
-   login: function() {
+  login: function() {
+    if(sessionStorage.getItem("user_id")) {
+      sessionStorage.clear();
+    }
+
     var login = new LoginView();
     login.render();
     $("#container").trigger("create");
@@ -446,9 +532,9 @@ var Router = Backbone.Router.extend({
 
 //Definining the show Individual Event Route
   show_event: function(id) {
-  var showIndividualEvent = new ShowIndividualEvent();
-  showIndividualEvent.render(id);
-  $("#container").trigger("create");
+    var showIndividualEvent = new ShowIndividualEvent();
+    showIndividualEvent.render(id);
+    $("#container").trigger("create");
   },
 
   //defining new_user route
