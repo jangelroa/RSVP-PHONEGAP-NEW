@@ -2,26 +2,17 @@
 <html>
 <head>
   <title>RSVP</title>
-</head>
-
-<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
-<meta name="format-detection" content="telephone=no" />
+  <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+  <meta charset="utf-8" />
+  <meta name="format-detection" content="telephone=no" />
   <meta name="msapplication-tap-highlight" content="no" />
   <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
   <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, target-densitydpi=medium-dpi" />
   <link rel="stylesheet" type="text/css" href="css/index.css" />
+</head>
+
 
 <style>
-  div {
-    margin: 0px;
-    padding: 0px;
-  }
-
-  .small-text {
-    font-size: 0.8em;
-    float: right;
-  }
-
   .smaller {
     width:600px;
     margin-left:auto;
@@ -63,7 +54,7 @@
 <script type="x-handlebars-template" id="login-template">
   <div data-role="header" data-theme="b">
 
-    <h1>RSVP App Login</h1>
+    <h1>Events Login</h1>
   </div>
 
   <div data-role="content">
@@ -219,16 +210,11 @@
 
     <ul id="event-list-items" data-role="listview">
       <li>
-
         <a href="#show_event/{{attributes.id}}" data-icon="carat-r">
-
-            <img src="{{attributes.public_picture}}">
-            <span class="small-text"> {{#if attributes.is_public}} Public {{else}} Private {{/if}}</span>
-            <h3> {{attributes.public_title}} </h3>
-            <p>{{attributes.public_description}}</p>
-
+          <img src="{{attributes.event_picture_url}}">
+          <h3> {{attributes.title}} </h3>
+          <p>{{attributes.public_description}}</p>
         </a>
-
       </li>
     </ul
 
@@ -330,59 +316,36 @@
 </script>
 <!--close Wants Invite List Page-->
 
-<!-- Public Event View -->
+<!-- Private Individual Event-Code View -->
 
-<script type="x-handlebars-template" id="public-event-template">
-
+<script type="x-handlebars-template" id="individual-event-template">
   <div data-role="header" data-theme="b">
     <!-- <a href="#allEvents" data-role="button" data-icon="back" data-theme="a">Back</a> -->
-      <h1>Public Event</h1>
+    <h1>Yes, please come....</h1>
   </div>
 
 
     <div role="main" class="ui-content">
       <div class="ui-grid-a">
-
-<!-- public_title, public_picture, public_location -->
-
-        <h3> Event Name: {{eventInfo.attributes.public_title}}</h3>
-        <div class="ui-block-a-not-used"><img src="{{eventInfo.attributes.public_picture}}" style = width: 600px, height = 200px/></div> <br>
-        <div class="ui-block-b-not-used">Location: <strong>{{eventInfo.attributes.public_location}}</div>
-        <br>
-        <div class="ui-block-a-not-used">Date: <strong>{{eventInfo.attributes.public_date}}</strong> </div>
-        <br>
-        <div class="ui-block-b-not-used">Time: <strong>{{eventInfo.attributes.public_time}}</strong> </div>
-        <br>
-        <div class="ui-block-b-not-used">Price: <strong>{{eventInfo.attributes.public_price}}</strong> </div>
-        <h3> Description: </h3>
-        <p> {{eventInfo.attributes.public_description}} </p>
-        <br>
-
-
-
-        {{#if attendingEvent}}
-          <a href="#rsvp/{{eventInfo.attributes.id}}" data-role ="button" data-icon = "carat-r" data-iconpos = "right" data-theme = "b">Change your RSVP</a>
-        {{else}}
-          <a href="#rsvp/{{eventInfo.attributes.id}}" data-role ="button" data-icon = "carat-r" data-iconpos = "right" data-theme = "b">RSVP</a>
-        {{/if}}
+        <h3> Event: {{eventInfo.attributes.title}}</h3>
+        <div class="ui-block-a"><img src="{{eventInfo.attributes.event_picture_url}}" style = width: 100px, height = 100px/></div>
+        <div class="ui-block-b"><strong>Location: {{eventInfo.attributes.location}}</div>
       </div>
   </div>
 
+  <div role="main" class="ui-content">
+      <div class="ui-grid-a">
+        <div class="ui-block-a"><strong> Save the date: {{eventInfo.attributes.date}}</strong> </div>
+        <div class="ui-block-b"><strong>Time: {{eventInfo.attributes.time}}</strong> </div>
+      </div>
+  </div>
+    <div role="main" class="ui-content">
+      <h3> Description: </h3>
+      <p> {{eventInfo.attributes.private_description}} </p>
 
+    </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    <a href="#allEvents" data-role ="button" data-icon = "carat-r" data-iconpos = "right" data-theme = "b">I am coming! </a>
 
   <div data-role="footer" data-position="fixed" data-theme="b">
     <div data-role="navbar">
@@ -398,70 +361,38 @@
 
 </script>
 
-<!-- close Public Event View View -->
+<!-- close Private Individual Event-Code View -->
 
-<!-- Private Event -->
-<script type="x-handlebars-template" id="private-event-template">
+<!-- Public View of Individual Private Event -->
+<script type="x-handlebars-template" id="pub-view-individual-event-template">
 
   <div data-role="header" data-theme="b">
      <!-- <a href="#allEvents" data-role="button" data-icon="back" data-theme="a">Back</a> -->
     <h1>Private Event</h1>
   </div>
 
-  {{#if attendingEvent}}
 
     <div role="main" class="ui-content">
       <div class="ui-grid-a">
-        <h3> Event Name: {{eventInfo.attributes.private_title}}</h3>
-        <div class="ui-block-a-not-used"><img src="{{eventInfo.attributes.private_picture}}" style = width: 600px, height = 200px/></div> <br>
-        <div class="ui-block-b-not-used">Location: <strong>{{eventInfo.attributes.private_location}}</div>
-        <br>
-        <div class="ui-block-a-not-used">Date: <strong>{{eventInfo.attributes.private_date}}</strong> </div>
-        <br>
-        <div class="ui-block-b-not-used">Time: <strong>{{eventInfo.attributes.private_time}}</strong> </div>
-        <br>
-        <div class="ui-block-b-not-used">Price: <strong>{{eventInfo.attributes.private_price}}</strong> </div>
-        <h3>Private Description: </h3>
-        <p> {{eventInfo.attributes.private_description}} </p>
-        <br>
-
-        <a href="#rsvp/{{eventInfo.attributes.id}}" data-role ="button" data-icon = "carat-r" data-iconpos = "right" data-theme = "b">Change your RSVP</a>
+        <h3> Event Name: {{eventInfo.attributes.title}} </h3>
+        <div><img src="{{eventInfo.attributes.event_picture_url}}" style = width: 200px, height = 200px/></div>
 
       </div>
-    </div>
+  </div>
 
-
-
-  {{else}}
-
-
-
-    <div role="main" class="ui-content">
+  <div role="main" class="ui-content">
       <div class="ui-grid-a">
-        <h3> Event Name: {{eventInfo.attributes.public_title}}</h3>
-        <div class="ui-block-a-not-used"><img src="{{eventInfo.attributes.public_picture}}" style = width: 600px, height = 200px/></div> <br>
-        <div class="ui-block-b-not-used">Location: <strong>PRIVATE</div>
-        <br>
-        <div class="ui-block-a-not-used">Date: <strong>PRIVATE</strong> </div>
-
-        <h3>Public Description: </h3>
-        <p> {{eventInfo.attributes.public_description}} </p>
-        <br>
-
-        <div>Private Code:</div>
-        <input id="private-code" type="text" placeholder="Paste Private Code"/>
-
-        <a href="#rsvp/{{eventInfo.attributes.id}}" data-role ="button" data-icon = "carat-r" data-iconpos = "right" data-theme = "b">RSVP</a>
-
-
-
+        <div class="ui-block-a"><strong>Date: </strong> PRIVATE</div>
+        <div class="ui-block-b"><strong>Time: </strong> PRIVATE</div>
       </div>
-    </div>
+  </div>
+    <div role="main" class="ui-content">
+      <h3> Description:  </h3>
+      <p> {{eventInfo.attributes.public_description}}   </p>
 
+    </div>
 
     <a href="#message-host" data-role ="button" data-icon = "mail" data-iconpos = "right" data-theme = "b">CONTACT HOST for a code! </a>
-
-  {{/if}}
 
   <div data-role="footer" data-position="fixed" data-theme="b">
     <div data-role="navbar">
@@ -475,7 +406,7 @@
   </div>
 </script>
 
-<!-- close Private Event -->
+<!-- close Public View of Individual Private Event -->
 
  <!-- Create Event View  -->
 <script type="x-handlebars-template" id="new-event-template">
@@ -531,7 +462,7 @@
       Picture URL (optional)
     </div>
     <div class="margin-top-20">
-      <input id="new-public_picture" type="text" placeholder="Picture URL" />
+      <input id="new-event_picture_url" type="text" placeholder="Picture URL" />
     </div>
 
     <div role="main" class="ui-content">
